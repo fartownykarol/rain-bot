@@ -1,4 +1,4 @@
-rain_bot.py#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Bot deszczowy dla Zduńskiej Woli.
 
 Co uruchomienie (zalecane: co 5 minut z crona):

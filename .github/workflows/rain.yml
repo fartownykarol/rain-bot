@@ -1,0 +1,43 @@
+name: Rain alert
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: rain-alert
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Przywróć stan z poprzedniego uruchomienia (żeby nie wysyłać tego samego alertu kilka razy)
+      - name: Restore state
+        uses: actions/cache/restore@v4
+        with:
+          path: rain_state.json
+          key: rain-state-none
+          restore-keys: rain-state-
+
+      - name: Check forecast
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          STATE_FILE: rain_state.json
+        run: python rain_bot.py
+
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: rain_state.json
+          key: rain-state-${{ github.run_id }}
